@@ -8,7 +8,7 @@ async function sendMessage() {
   appendMessage("You", message);
   input.value = "Thinking...";
 
-  const apiKey = "YOUR_GEMINI_API_KEY"; // Replace with your actual API key
+  const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; 
   const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + apiKey;
 
   const response = await fetch(url, {
