@@ -1,52 +1,55 @@
 body {
-  margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: #0f172a;
-  color: white;
+  background: #121212;
+  color: #fff;
   display: flex;
   justify-content: center;
-  align-items: center;
-  height: 100vh;
+  padding: 30px;
 }
 
 .container {
-  width: 90%;
-  max-width: 500px;
+  width: 400px;
+  max-width: 90%;
+}
+
+h1 {
+  text-align: center;
+  color: #00ffcc;
 }
 
 .chatbox {
-  background: #1e293b;
-  border-radius: 16px;
+  background: #1e1e1e;
+  border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .messages {
-  height: 400px;
   overflow-y: auto;
-  border-radius: 12px;
-  background: #334155;
-  padding: 10px;
+  height: 400px;
   margin-bottom: 10px;
+  border: 1px solid #333;
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .message {
-  margin-bottom: 12px;
-  padding: 10px 15px;
-  border-radius: 12px;
-  max-width: 80%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 6px;
 }
 
 .user {
-  background-color: #0ea5e9;
-  align-self: flex-end;
+  background-color: #007acc;
   text-align: right;
-  margin-left: auto;
 }
 
 .bot {
-  background-color: #22c55e;
-  align-self: flex-start;
+  background-color: #444;
+  text-align: left;
 }
 
 .input-box {
@@ -57,21 +60,23 @@ body {
 input[type="text"] {
   flex: 1;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 5px;
   border: none;
-  font-size: 16px;
+  outline: none;
 }
 
 button {
   padding: 10px 15px;
-  background: #3b82f6;
-  color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 5px;
+  background-color: #00ffcc;
+  color: black;
   cursor: pointer;
+  font-weight: bold;
 }
 
 button:hover {
-  background: #2563eb;
+  background-color: #00ccaa;
 }
+
 
