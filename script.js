@@ -10,26 +10,14 @@ const recognition = new SpeechRecognition();
 recognition.lang = 'en-US';
 recognition.interimResults = false;
 
-// List of wake words for activation (exact match, lower case)
-const wakeWords = ["hello prat", "hi prat", "hey prat", "hello", "hi", "hey"];
-
-// When voice input returns a result
+// When voice input returns a result, just send the transcript
 recognition.onresult = (event) => {
   const transcript = event.results[0][0].transcript.trim().toLowerCase();
-  console.log("Voice input:", transcript);
-  
-  // Check if transcript exactly equals one of the wake words
-  if (wakeWords.includes(transcript)) {
-    // If wake word detected, greet the user and change avatar to talking animation
-    appendMessage("Prat", "Hi there! I'm here and ready to help. What would you like to ask?");
-    changeAvatar("prat_talking.gif");
-    // Revert avatar to idle after 2 seconds
-    setTimeout(() => changeAvatar("prat_idle.gif"), 2000);
-  } else {
-    // Otherwise, set the input field to the transcript and send the message
-    userInput.value = transcript;
-    sendMessage();
-  }
+  // Clean punctuation from transcript
+  const cleanedTranscript = transcript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+  console.log("Voice input:", cleanedTranscript);
+  userInput.value = cleanedTranscript;
+  sendMessage();
 };
 
 // Function to start voice recognition
@@ -37,17 +25,42 @@ function activateVoice() {
   recognition.start();
 }
 
-// Send message to Gemini API and update chat log
+// Function to send message (handles greetings and temperature)
 async function sendMessage() {
-  const message = userInput.value.trim();
-  if (!message) return;
+  const rawMessage = userInput.value.trim();
+  if (!rawMessage) return;
   
-  appendMessage("You", message);
+  // Clean the message for simple checks
+  const message = rawMessage.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+  
+  appendMessage("You", rawMessage);
   userInput.value = "Thinking...";
   
   // Change avatar to talking state
   changeAvatar("prat_talking.gif");
   
+  // Check for greeting messages (exact match)
+  const greetings = ["hi", "hello", "hey"];
+  if (greetings.includes(message)) {
+    setTimeout(() => {
+      appendMessage("Prat", "Hi there! I'm here and ready to help. What would you like to ask?");
+      userInput.value = "";
+      setTimeout(() => changeAvatar("prat_idle.gif"), 1500);
+    }, 500);
+    return;
+  }
+  
+  // Check for temperature-related queries (if message includes "temp" or "temperature")
+  if (message.includes("temp") || message.includes("temperature")) {
+    setTimeout(() => {
+      appendMessage("Prat", "The current temperature is 24°C. (Note: This is a static response for now.)");
+      userInput.value = "";
+      setTimeout(() => changeAvatar("prat_idle.gif"), 1500);
+    }, 500);
+    return;
+  }
+  
+  // Otherwise, call the Gemini API
   const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; // Replace with your actual API key
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
   
@@ -56,12 +69,12 @@ async function sendMessage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: message }] }]
+        contents: [{ parts: [{ text: rawMessage }] }]
       })
     });
     
     const data = await response.json();
-    // Get the reply; if undefined, set a fallback response
+    // Get the reply; if undefined, use a fallback
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I didn't get that.";
     appendMessage("Prat", reply);
   } catch (error) {
@@ -89,11 +102,8 @@ function changeAvatar(imageName) {
   pratAvatar.src = `prat-avatar/${imageName}`;
 }
 
-// Optional: start voice recognition on mic button click
+// Start voice recognition when mic button is clicked
 micBtn.addEventListener("click", activateVoice);
 
-// On window load, display instructions and start idle avatar
-window.onload = () => {
-  appendMessage("System", "Say 'Hello Prat' (or hi/hey prat/hello/hi/hey) or type your message to begin.");
-  changeAvatar("prat_idle.gif");
-};
+// On window
+
