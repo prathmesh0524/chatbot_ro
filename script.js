@@ -20,7 +20,7 @@ recognition.onresult = (event) => {
   
   // Check if transcript contains any wake word
   if (wakeWords.some(word => transcript.includes(word))) {
-    // If wake word detected, greet the user and change avatar to a talking animation
+    // If wake word detected, greet the user and change avatar to talking animation
     appendMessage("Prat", "Hi there! I'm here and ready to help. What would you like to ask?");
     changeAvatar("prat_talking.gif");
     // Revert avatar to idle after 2 seconds
@@ -48,7 +48,7 @@ async function sendMessage() {
   // Change avatar to talking state
   changeAvatar("prat_talking.gif");
   
-  const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw";
+  const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; // Replace with your actual API key
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
   
   try {
