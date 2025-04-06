@@ -1,18 +1,15 @@
 const chatBox = document.getElementById("chat-box");
 const input = document.getElementById("user-input");
 
-// Start voice recognition
 window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = new SpeechRecognition();
 recognition.lang = 'en-US';
 recognition.interimResults = false;
 
 recognition.onresult = (event) => {
-  const transcript = event.results[0][0].transcript.trim();
-  console.log("Heard:", transcript);
-
-  if (transcript.toLowerCase() === "hello prat") {
-    appendMessage("Prat", "Hi! I'm here. How can I help you?");
+  const transcript = event.results[0][0].transcript.trim().toLowerCase();
+  if (transcript === "hello prat") {
+    appendMessage("Prat", "Hi there! I’m here. Ask me anything.");
   } else {
     input.value = transcript;
     sendMessage();
@@ -30,8 +27,8 @@ async function sendMessage() {
   appendMessage("You", message);
   input.value = "Thinking...";
 
-  const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; // Replace with your key
-  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + apiKey;
+  const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -42,7 +39,7 @@ async function sendMessage() {
   });
 
   const data = await response.json();
-  const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "No reply found.";
+  const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I didn't get that.";
   appendMessage("Prat", reply);
   input.value = "";
 }
@@ -55,7 +52,6 @@ function appendMessage(sender, text) {
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Auto-start voice when page loads
 window.onload = () => {
   appendMessage("System", "Say 'Hello Prat' to begin.");
   activateVoice();
