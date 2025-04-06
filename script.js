@@ -1,65 +1,76 @@
-const inputBox = document.getElementById("user-input");
+const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; // 🔐 Replace this with your actual Gemini API key
+
 const chatBox = document.getElementById("chat-box");
-const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; // 🔁 Replace with YOUR actual Gemini API key
+const userInput = document.getElementById("user-input");
+const sendButton = document.getElementById("send-btn");
 
 function appendMessage(sender, message) {
-  const msgDiv = document.createElement("div");
-  msgDiv.className = sender === "You" ? "user-message" : "bot-message";
-  msgDiv.textContent = `${sender}: ${message}`;
-  chatBox.appendChild(msgDiv);
+  const messageDiv = document.createElement("div");
+  messageDiv.classList.add("message", sender);
+  messageDiv.innerText = `${sender === "user" ? "You" : "Prat"}: ${message}`;
+  chatBox.appendChild(messageDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-async function sendMessage() {
-  const message = inputBox.value.trim();
-  if (!message) return;
+async function getGeminiResponse(userMessage) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
 
-  appendMessage("You", message);
-  inputBox.value = "";
-
-  const lower = message.toLowerCase();
-
-  // 💬 Hardcoded responses
-  if (["hi", "hello", "hey"].includes(lower)) {
-    appendMessage("Prat", "Hi there! I'm here and ready to help. What would you like to ask?");
-    return;
-  }
-  if (lower.includes("temp")) {
-    appendMessage("Prat", "The current temperature is 24°C. (Note: This is a static response for now.)");
-    return;
-  }
-
-  // 🧠 Ask Gemini API
-  try {
-    const res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: userMessage }],
         },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: message }] }],
-        }),
-      }
-    );
+      ],
+    }),
+  });
 
-    const data = await res.json();
-    const reply =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Sorry, I didn’t get that.";
+  const data = await response.json();
+  const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    appendMessage("Prat", reply);
-  } catch (err) {
-    console.error(err);
-    appendMessage("Prat", "Oops! Couldn’t connect to Gemini.");
+  return reply || "Sorry, I didn't understand that.";
+}
+
+async function sendMessage() {
+  const message = userInput.value.trim();
+  if (message === "") return;
+
+  appendMessage("user", message);
+  userInput.value = "";
+
+  // Check for greetings
+  const greetings = ["hi", "hello", "hey", "hola", "yo"];
+  if (greetings.includes(message.toLowerCase())) {
+    appendMessage("bot", "Hi there! I'm here and ready to help. What would you like to ask?");
+    return;
+  }
+
+  // Check for temperature keyword
+  if (message.toLowerCase().includes("temp") || message.toLowerCase().includes("weather")) {
+    appendMessage("bot", "The current temperature is 24°C. (Note: This is a static response for now.)");
+    return;
+  }
+
+  // Otherwise, fetch response from Gemini
+  try {
+    const botReply = await getGeminiResponse(message);
+    appendMessage("bot", botReply);
+  } catch (error) {
+    appendMessage("bot", "There was an error contacting Gemini API.");
+    console.error(error);
   }
 }
 
-document.getElementById("send-btn").addEventListener("click", sendMessage);
-inputBox.addEventListener("keydown", (e) => {
+// Events
+sendButton.addEventListener("click", sendMessage);
+userInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 
+window.onload = () => {
+  appendMessage("bot", "System: You can greet me or type a question to begin.");
+};
 
