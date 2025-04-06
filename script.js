@@ -10,16 +10,16 @@ const recognition = new SpeechRecognition();
 recognition.lang = 'en-US';
 recognition.interimResults = false;
 
-// List of wake words for activation (case insensitive)
-const wakeWords = ["hello prat", "hi prat", "hey prat"];
+// List of wake words for activation (exact match, lower case)
+const wakeWords = ["hello prat", "hi prat", "hey prat", "hello", "hi", "hey"];
 
 // When voice input returns a result
 recognition.onresult = (event) => {
   const transcript = event.results[0][0].transcript.trim().toLowerCase();
   console.log("Voice input:", transcript);
   
-  // Check if transcript contains any wake word
-  if (wakeWords.some(word => transcript.includes(word))) {
+  // Check if transcript exactly equals one of the wake words
+  if (wakeWords.includes(transcript)) {
     // If wake word detected, greet the user and change avatar to talking animation
     appendMessage("Prat", "Hi there! I'm here and ready to help. What would you like to ask?");
     changeAvatar("prat_talking.gif");
@@ -94,6 +94,6 @@ micBtn.addEventListener("click", activateVoice);
 
 // On window load, display instructions and start idle avatar
 window.onload = () => {
-  appendMessage("System", "Say 'Hello Prat' (or hi/hey prat) or type your message to begin.");
+  appendMessage("System", "Say 'Hello Prat' (or hi/hey prat/hello/hi/hey) or type your message to begin.");
   changeAvatar("prat_idle.gif");
 };
