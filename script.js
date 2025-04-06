@@ -1,6 +1,5 @@
 
-  const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; // Replace this with your actual Gemini API key
-
+const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; // 🔐 Replace with your actual Gemini API key
 
 window.onload = () => {
   const chatLog = document.getElementById("chat-log");
@@ -16,13 +15,15 @@ window.onload = () => {
   function appendMessage(sender, message) {
     const div = document.createElement("div");
     div.classList.add("message", sender);
-    div.innerText = `${sender === "user" ? "You" : "Prat"}: ${message}`;
+    div.textContent = `${sender === "user" ? "You" : "Prat"}: ${message}`;
     chatLog.appendChild(div);
     chatLog.scrollTop = chatLog.scrollHeight;
   }
 
   async function fetchGeminiResponse(message) {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+    
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -37,25 +38,28 @@ window.onload = () => {
   async function sendMessage() {
     const message = userInput.value.trim();
     if (!message) return;
+
     appendMessage("user", message);
     userInput.value = "";
 
     try {
       const reply = await fetchGeminiResponse(message);
       appendMessage("bot", reply);
-    } catch (e) {
+    } catch (err) {
+      console.error(err);
       appendMessage("bot", "Oops! Something went wrong.");
-      console.error(e);
     }
   }
 
-  // Button clicks
+  // Button click
   sendBtn.addEventListener("click", sendMessage);
+
+  // Enter key press
   userInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendMessage();
   });
 
-  // Voice input
+  // Voice input button
   micBtn.addEventListener("click", () => {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = "en-IN";
@@ -67,12 +71,12 @@ window.onload = () => {
       sendMessage();
     };
 
-    recognition.onerror = () => {
-      appendMessage("bot", "Voice input failed.");
+    recognition.onerror = (e) => {
+      console.error("Voice error:", e);
+      appendMessage("bot", "Voice input failed. Try again.");
     };
   });
 
-  // Initial message
-  appendMessage("bot", "System: You can type or use mic to talk to me.");
+  // Welcome message
+  appendMessage("bot", "System: Hello! I'm Prat. You can type or speak to chat with me.");
 };
-
