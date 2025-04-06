@@ -1,5 +1,5 @@
 
-const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; // 🔐 Replace with your actual Gemini API key
+const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw";
 
 window.onload = () => {
   const chatLog = document.getElementById("chat-log");
@@ -16,32 +16,38 @@ window.onload = () => {
   }
 
   async function fetchGeminiResponse(message) {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: message }] }]
-      })
-    });
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: message }]
+            }
+          ]
+        }),
+      });
 
-    const data = await response.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I didn't get that.";
+      const data = await res.json();
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I didn't get that.";
+    } catch (err) {
+      console.error(err);
+      return "Something went wrong.";
+    }
   }
 
   async function sendMessage() {
     const message = userInput.value.trim();
     if (!message) return;
-
     appendMessage("user", message);
     userInput.value = "";
 
-    try {
-      const reply = await fetchGeminiResponse(message);
-      appendMessage("bot", reply);
-    } catch (error) {
-      appendMessage("bot", "⚠️ Failed to connect to Gemini API.");
-      console.error(error);
-    }
+    const reply = await fetchGeminiResponse(message);
+    appendMessage("bot", reply);
   }
 
   sendBtn.addEventListener("click", sendMessage);
@@ -61,10 +67,9 @@ window.onload = () => {
     };
 
     recognition.onerror = () => {
-      appendMessage("bot", "Voice input not working.");
+      appendMessage("bot", "Voice input failed.");
     };
   });
 
-  appendMessage("bot", "System: You can type or speak to me. Let’s chat!");
+  appendMessage("bot", "System: You can type or use mic to talk to me.");
 };
-
