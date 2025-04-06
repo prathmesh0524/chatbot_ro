@@ -1,4 +1,4 @@
-const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; // 🔐 Replace this with your actual Gemini API key
+const apiKey = "AIzaSyC0jRUeYWtZD-jQhgHNsayxE8WzKniYlaw"; // Replace with your Gemini API key
 
 const chatBox = document.getElementById("chat-box");
 const userInput = document.getElementById("user-input");
@@ -13,25 +13,31 @@ function appendMessage(sender, message) {
 }
 
 async function getGeminiResponse(userMessage) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: userMessage }],
-        },
-      ],
-    }),
-  });
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: userMessage }],
+          },
+        ],
+      }),
+    });
 
-  const data = await response.json();
-  const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const data = await response.json();
+    console.log("Gemini API Raw Response:", data); // For debugging
 
-  return reply || "Sorry, I didn't understand that.";
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    return reply || "Sorry, I didn't understand that.";
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    return "There was an error contacting Gemini API.";
+  }
 }
 
 async function sendMessage() {
@@ -41,27 +47,21 @@ async function sendMessage() {
   appendMessage("user", message);
   userInput.value = "";
 
-  // Check for greetings
+  // Static keyword responses
   const greetings = ["hi", "hello", "hey", "hola", "yo"];
   if (greetings.includes(message.toLowerCase())) {
     appendMessage("bot", "Hi there! I'm here and ready to help. What would you like to ask?");
     return;
   }
 
-  // Check for temperature keyword
   if (message.toLowerCase().includes("temp") || message.toLowerCase().includes("weather")) {
     appendMessage("bot", "The current temperature is 24°C. (Note: This is a static response for now.)");
     return;
   }
 
-  // Otherwise, fetch response from Gemini
-  try {
-    const botReply = await getGeminiResponse(message);
-    appendMessage("bot", botReply);
-  } catch (error) {
-    appendMessage("bot", "There was an error contacting Gemini API.");
-    console.error(error);
-  }
+  // Otherwise, use Gemini API
+  const botReply = await getGeminiResponse(message);
+  appendMessage("bot", botReply);
 }
 
 // Events
@@ -73,4 +73,3 @@ userInput.addEventListener("keydown", (e) => {
 window.onload = () => {
   appendMessage("bot", "System: You can greet me or type a question to begin.");
 };
-
